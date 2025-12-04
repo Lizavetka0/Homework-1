@@ -1,0 +1,39 @@
+stages:
+  prepare:
+    cmd: python src/prepare.py --data_path data/raw/data.csv --output_path data/prepared
+    deps:
+      - src/prepare.py
+      - data/raw/data.csv
+    outs:
+      - data/prepared/train.csv
+      - data/prepared/test.csv
+
+  train:
+    cmd: python src/train.py --train_data data/prepared/train.csv --model_path models/model.pkl
+    deps:
+      - src/train.py
+      - data/prepared/train.csv
+    params:
+      - train.param1
+      - train.param2
+    outs:
+      - models/model.pkl
+
+  evaluate:
+    cmd: python src/evaluate.py --model_path models/model.pkl --test_data_path data/prepared/test.csv --metrics_path metrics/metrics.json
+    deps:
+      - src/evaluate.py
+      - models/model.pkl
+      - data/prepared/test.csv
+    metrics:
+      - metrics/metrics.json:
+          cache: false
+
+  validate_model:
+    cmd: python src/validate_model.py --metrics_path metrics/metrics.json --model_path models/model.pkl --test_data_path data/prepared/test.csv --params_path params.yaml
+    deps:
+      - src/validate_model.py
+      - models/model.pkl
+      - data/prepared/test.csv
+      - params.yaml
+      - metrics/metrics.json
